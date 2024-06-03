@@ -1,52 +1,52 @@
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 
-const isProduction = process.env.NODE_ENV == 'production';
+const isProduction = process.env.NODE_ENV === 'production';
 
 const config = {
-    entry: './src/index.js',
-    devServer: {
-        open: true,
-        host: 'localhost',
-        hot: true,
-    },
-    plugins: [
-        new HtmlWebpackPlugin({
-            template: 'index.html',
-        }),
-    ],
-    module: {
-      rules: [
-        {
-          test: /\.js$/,
-          exclude: /node_modules/,
-          use: {
-            loader: 'babel-loader',
-            options: {
-              presets: ['@babel/preset-env'],
-            },
+  entry: './src/index.js',
+  devServer: {
+    open: true,
+    host: 'localhost',
+    hot: true,
+  },
+  plugins: [
+    new HtmlWebpackPlugin({
+      template: 'index.html',
+    }),
+  ],
+  module: {
+    rules: [
+      {
+        test: /\.js$/,
+        exclude: /node_modules/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['@babel/preset-env'],
           },
         },
-        { test: /\.css$/, use: ['style-loader', 'css-loader', 'postcss-loader'] },
-        {
-          test: /\.woff2?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-          use: 'url-loader?limit=10000',
-        },
-        {
-          test: /\.(ttf|eot|svg)(\?[\s\S]+)?$/,
-          use: 'file-loader',
-        },
-      ],
-    },
-    output: {
-      clean: true,
-    },
+      },
+      { test: /\.css$/, use: ['style-loader', 'css-loader', 'postcss-loader'] },
+      {
+        test: /\.woff2?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+        use: 'url-loader?limit=10000',
+      },
+      {
+        test: /\.(ttf|eot|svg)(\?[\s\S]+)?$/,
+        use: 'file-loader',
+      },
+    ],
+  },
+  output: {
+    clean: true,
+  },
 };
 
 export default () => {
-    if (isProduction) {
-        config.mode = 'production';
-    } else {
-        config.mode = 'development';
-    }
-    return config;
+  if (isProduction) {
+    config.mode = 'production';
+  } else {
+    config.mode = 'development';
+  }
+  return config;
 };
