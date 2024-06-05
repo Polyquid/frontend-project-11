@@ -33,10 +33,14 @@ export default () => {
   const inputForm = document.querySelector('form .form-control');
   const rssForm = document.querySelector('.rss-form');
   const feedbackText = document.querySelector('.feedback');
-  const watchedState = onChange(state, (path) => {
+  const watchedState = onChange(state, (path, value) => {
     if (path === 'errors') {
       feedbackText.textContent = i18nInstance.t('form.feedback.invalidUrl');
       inputForm.classList.add('is-invalid');
+    }
+    if (path === 'isValid' && value === true) {
+      feedbackText.textContent = '';
+      inputForm.classList.remove('is-invalid');
     }
   });
   inputForm.addEventListener('input', (e) => {

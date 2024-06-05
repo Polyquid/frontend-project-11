@@ -23,7 +23,7 @@ export default {
       readAll: 'Читать полностью',
     },
     created: {
-      template: 'created by',
+      template: 'created by ',
       author: 'Polyquid',
     },
   },
