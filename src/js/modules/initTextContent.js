@@ -10,7 +10,6 @@ const setTextContent = (elements, i18n, path = []) => {
       node.setAttribute('placeholder', i18n.t(`${pathName}${name}`));
       return;
     }
-    // eslint-disable-next-line no-param-reassign
     node.textContent = i18n.t(`${pathName}${name}`);
   });
 };

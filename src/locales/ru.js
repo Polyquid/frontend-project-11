@@ -11,9 +11,13 @@ export default {
         ok: 'RSS успешно загружен',
         invalidUrl: 'Ссылка должна быть валидным URL',
         invalidRequest: 'Ресурс не содержит валидный RSS',
+        alreadyExists: 'RSS уже существует',
+        invalidRss: 'Ресурс не содержит валидный RSS',
       },
     },
-    feeds: 'Фиды',
+    feeds: {
+      title: 'Фиды',
+    },
     posts: {
       title: 'Посты',
       watch: 'Просмотр',
