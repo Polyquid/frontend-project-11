@@ -29,11 +29,13 @@ export default (elements, i18n, state) => onChange(state, (path, value, prevValu
   }
   if (path === 'feeds') {
     const feedsBody = document.querySelector('.feeds ul');
+    feedsBody.innerHTML = '';
     const elems = generateNodesOfFeeds(value);
     elems.forEach((elem) => feedsBody.append(elem));
   }
   if (path === 'posts') {
     const postsBody = document.querySelector('.posts ul');
+    postsBody.innerHTML = '';
     const elems = generateNodesOfPosts(value, i18n);
     elems.forEach((elem) => postsBody.append(elem));
   }

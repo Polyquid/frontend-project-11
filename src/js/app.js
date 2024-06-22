@@ -1,11 +1,13 @@
 import i18next from 'i18next';
 import axios from 'axios';
+import { cloneDeep } from 'lodash';
 import { object, string, setLocale } from 'yup';
 import initView from './view.js';
 import initTextContent from './modules/initTextContent.js';
 import ru from '../locales/ru.js';
 import parseRSS from './modules/parseRSS.js';
-import generateDataOfFeedAndPosts from './modules/generateDataOfFeedAndPosts.js';
+import generateDataOfFeed from './modules/generateDataOfFeed.js';
+import generateDataOfPosts from './modules/generateDataOfPosts.js';
 
 export default () => {
   const i18nInstance = i18next.createInstance();
@@ -41,6 +43,28 @@ export default () => {
     posts: [],
   };
   const watchedState = initView(elements, i18nInstance, state);
+  const trackingRSSFlow = (url, id) => {
+    setTimeout(() => {
+      axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(`${url}`)}`)
+        .then((res) => {
+          const rssData = parseRSS(res.data.contents);
+          const newPosts = generateDataOfPosts(rssData, id);
+          const filteredCurrentPosts = cloneDeep(watchedState.posts)
+            .filter((post) => post.feedId === id);
+          const filteredNewPosts = newPosts
+            .filter((post) => !filteredCurrentPosts.some(({
+              title: currTitle,
+              description: currDes,
+              link: currLink,
+            }) => post.title === currTitle
+            && post.description === currDes
+            && post.link === currLink));
+          watchedState.posts.unshift(...filteredNewPosts);
+          console.log(watchedState);
+          trackingRSSFlow(url, id);
+        });
+    }, 5000);
+  };
   elements.inputForm.addEventListener('input', (e) => {
     watchedState.urlInput = e.target.value.trim();
   });
@@ -56,30 +80,38 @@ export default () => {
         } else {
           axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(`${watchedState.urlInput}`)}`)
             .then((res) => {
-              const rssData = parseRSS(res.data.contents);
-              const {
-                title,
-                description,
-                id,
-                posts,
-              } = generateDataOfFeedAndPosts(rssData);
-              watchedState.feeds.push({
-                title,
-                description,
-                id,
-                url: watchedState.urlInput,
-              });
-              watchedState.posts = [...watchedState.posts, ...posts];
-              watchedState.status = 'form.feedback.ok';
+              if (res.data.status.http_code >= 400) {
+                watchedState.status = 'invalidRss';
+                watchedState.errors.push('form.feedback.invalidRss');
+              } else {
+                const rssData = parseRSS(res.data.contents);
+                const {
+                  title,
+                  description,
+                  id,
+                } = generateDataOfFeed(rssData);
+                watchedState.feeds.push({
+                  title,
+                  description,
+                  id,
+                  url: watchedState.urlInput,
+                });
+                const newPosts = generateDataOfPosts(rssData, id);
+                watchedState.posts.unshift(...newPosts);
+                trackingRSSFlow(watchedState.urlInput, id);
+                watchedState.status = 'form.feedback.ok';
+                elements.rssForm.reset();
+              }
+            })
+            .catch(() => {
+              watchedState.status = 'networkError';
+              watchedState.errors.push('form.feedback.networkError');
             });
         }
       })
       .catch((err) => {
         watchedState.status = 'urlIsInvalid';
         watchedState.errors = err.errors;
-      })
-      .finally(() => {
-        elements.rssForm.reset();
       });
   });
 };

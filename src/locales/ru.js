@@ -13,6 +13,7 @@ export default {
         invalidRequest: 'Ресурс не содержит валидный RSS',
         alreadyExists: 'RSS уже существует',
         invalidRss: 'Ресурс не содержит валидный RSS',
+        networkError: 'Ошибка сети',
       },
     },
     feeds: {
