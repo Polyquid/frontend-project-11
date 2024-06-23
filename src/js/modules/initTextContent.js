@@ -28,6 +28,10 @@ export default (document, i18n) => {
       template: document.querySelector('#authorTemplate'),
       author: document.querySelector('#author'),
     },
+    modal: {
+      close: document.querySelector('.modal-footer>button'),
+      readAll: document.querySelector('.modal-footer>a'),
+    },
   };
   setTextContent(mapElements, i18n);
 };

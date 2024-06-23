@@ -2,6 +2,7 @@ import i18next from 'i18next';
 import axios from 'axios';
 import { cloneDeep } from 'lodash';
 import { object, string, setLocale } from 'yup';
+import { Modal } from 'bootstrap';
 import initView from './view.js';
 import initTextContent from './modules/initTextContent.js';
 import ru from '../locales/ru.js';
@@ -34,6 +35,13 @@ export default () => {
     submitButton: document.querySelector('button[type="submit"]'),
     postsWrapper: document.querySelector('.posts'),
     feedsWrapper: document.querySelector('.feeds'),
+    body: document.querySelector('body'),
+    modal: {
+      wrapper: new Modal(document.querySelector('.modal')),
+      readAllButton: document.querySelector('.modal-footer>a'),
+      title: document.querySelector('.modal-title'),
+      description: document.querySelector('.modal-body'),
+    },
   };
   const state = {
     urlInput: null,
@@ -41,6 +49,13 @@ export default () => {
     errors: [],
     feeds: [],
     posts: [],
+    checkedPosts: null,
+    modal: {
+      isShown: false,
+      title: null,
+      description: null,
+      link: null,
+    },
   };
   const watchedState = initView(elements, i18nInstance, state);
   const trackingRSSFlow = (url, id) => {
@@ -48,7 +63,7 @@ export default () => {
       axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(`${url}`)}`)
         .then((res) => {
           const rssData = parseRSS(res.data.contents);
-          const newPosts = generateDataOfPosts(rssData, id);
+          const newPosts = generateDataOfPosts(rssData, id, i18nInstance, watchedState);
           const filteredCurrentPosts = cloneDeep(watchedState.posts)
             .filter((post) => post.feedId === id);
           const filteredNewPosts = newPosts
@@ -60,9 +75,9 @@ export default () => {
             && post.description === currDes
             && post.link === currLink));
           watchedState.posts.unshift(...filteredNewPosts);
-          console.log(watchedState);
           trackingRSSFlow(url, id);
-        });
+        })
+        .catch((err) => console.log(err));
     }, 5000);
   };
   elements.inputForm.addEventListener('input', (e) => {
@@ -96,14 +111,15 @@ export default () => {
                   id,
                   url: watchedState.urlInput,
                 });
-                const newPosts = generateDataOfPosts(rssData, id);
+                const newPosts = generateDataOfPosts(rssData, id, i18nInstance, watchedState);
                 watchedState.posts.unshift(...newPosts);
                 trackingRSSFlow(watchedState.urlInput, id);
                 watchedState.status = 'form.feedback.ok';
                 elements.rssForm.reset();
               }
             })
-            .catch(() => {
+            .catch((err) => {
+              console.log(err);
               watchedState.status = 'networkError';
               watchedState.errors.push('form.feedback.networkError');
             });

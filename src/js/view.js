@@ -1,6 +1,5 @@
 import onChange from 'on-change';
 import generateNodesOfFeeds from './modules/generateNodesOfFeeds.js';
-import generateNodesOfPosts from './modules/generateNodesOfPosts.js';
 import initFeedsAndPosts from './modules/initFeedsAndPosts.js';
 
 export default (elements, i18n, state) => onChange(state, (path, value, prevValue) => {
@@ -30,13 +29,25 @@ export default (elements, i18n, state) => onChange(state, (path, value, prevValu
   if (path === 'feeds') {
     const feedsBody = document.querySelector('.feeds ul');
     feedsBody.innerHTML = '';
-    const elems = generateNodesOfFeeds(value);
-    elems.forEach((elem) => feedsBody.append(elem));
+    const feeds = generateNodesOfFeeds(value);
+    feeds.forEach((feed) => feedsBody.append(feed));
   }
   if (path === 'posts') {
     const postsBody = document.querySelector('.posts ul');
     postsBody.innerHTML = '';
-    const elems = generateNodesOfPosts(value, i18n);
-    elems.forEach((elem) => postsBody.append(elem));
+    value.forEach(({ node }) => postsBody.append(node));
+  }
+  if (path.includes('modal') && typeof value === 'object') {
+    elements.modal.title.textContent = value.title;
+    elements.modal.description.textContent = value.description;
+    elements.modal.readAllButton.setAttribute('href', `${value.link}`);
+    elements.modal.wrapper.show();
+  }
+  if (path.includes('modal') && value === false) {
+    elements.modal.wrapper.hide();
+  }
+  if (path.includes('checkedPosts')) {
+    value.classList.remove('fw-bold');
+    value.classList.add('fw-normal', 'link-secondary');
   }
 });
