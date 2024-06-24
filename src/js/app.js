@@ -95,10 +95,7 @@ export default () => {
         } else {
           axios.get(`https://allorigins.hexlet.app/get?disableCache=true&url=${encodeURIComponent(`${watchedState.urlInput}`)}`)
             .then((res) => {
-              if (res.data.status.http_code >= 400) {
-                watchedState.status = 'invalidRss';
-                watchedState.errors.push('form.feedback.invalidRss');
-              } else {
+              try {
                 const rssData = parseRSS(res.data.contents);
                 const {
                   title,
@@ -116,6 +113,10 @@ export default () => {
                 trackingRSSFlow(watchedState.urlInput, id);
                 watchedState.status = 'form.feedback.ok';
                 elements.rssForm.reset();
+              } catch (error) {
+                watchedState.status = 'invalidRss';
+                watchedState.errors.push('form.feedback.invalidRss');
+                throw new Error(error);
               }
             })
             .catch((err) => {
