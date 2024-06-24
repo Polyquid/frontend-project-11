@@ -77,7 +77,10 @@ export default () => {
           watchedState.posts.unshift(...filteredNewPosts);
           trackingRSSFlow(url, id);
         })
-        .catch((err) => console.log(err));
+        .catch((error) => {
+          console.log(error);
+          throw new Error(error);
+        });
     }, 5000);
   };
   elements.inputForm.addEventListener('input', (e) => {
@@ -119,16 +122,19 @@ export default () => {
                 throw new Error(error);
               }
             })
-            .catch((err) => {
-              console.log(err);
+            .catch((error) => {
+              console.log(error);
               watchedState.status = 'networkError';
               watchedState.errors.push('form.feedback.networkError');
+              throw new Error(error);
             });
         }
       })
-      .catch((err) => {
+      .catch((error) => {
+        console.log(error);
         watchedState.status = 'urlIsInvalid';
-        watchedState.errors = err.errors;
+        watchedState.errors = error.errors;
+        throw new Error(error);
       });
   });
 };
