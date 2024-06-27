@@ -3,23 +3,23 @@ import generateNodesOfFeeds from './modules/generateNodesOfFeeds.js';
 import initFeedsAndPosts from './modules/initFeedsAndPosts.js';
 
 export default (elements, i18n, state) => onChange(state, (path, value, prevValue) => {
-  if (path === 'errors') {
+  if (path === 'form.errors') {
     elements.submitButton.removeAttribute('disabled');
     elements.feedbackText.textContent = i18n.t(value);
     elements.inputForm.classList.add('is-invalid');
     elements.feedbackText.classList.remove('text-success');
     elements.feedbackText.classList.add('text-danger');
   }
-  if (path === 'status' && value === 'sending') {
+  if (path === 'form.status' && value === 'sending') {
     elements.submitButton.setAttribute('disabled', '');
     elements.inputForm.classList.remove('is-invalid');
     elements.feedbackText.textContent = '';
     elements.inputForm.classList.remove('is-invalid');
   }
-  if (path === 'status' && value === 'form.feedback.ok') {
+  if (path === 'form.isValid' && value === true) {
     elements.submitButton.removeAttribute('disabled');
     elements.inputForm.classList.remove('is-invalid');
-    elements.feedbackText.textContent = i18n.t(value);
+    elements.feedbackText.textContent = i18n.t('form.feedback.ok');
     elements.feedbackText.classList.add('text-success');
     elements.feedbackText.classList.remove('text-danger');
   }

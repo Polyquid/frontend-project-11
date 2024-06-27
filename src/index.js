@@ -1,4 +1,4 @@
-import '../css/custom.css';
+import './main.css';
 import app from './app.js';
 
 app();

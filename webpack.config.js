@@ -3,7 +3,7 @@ import HtmlWebpackPlugin from 'html-webpack-plugin';
 const isProduction = process.env.NODE_ENV === 'production';
 
 const config = {
-  entry: './src/js/index.js',
+  entry: './src/index.js',
   devServer: {
     open: true,
     host: 'localhost',
