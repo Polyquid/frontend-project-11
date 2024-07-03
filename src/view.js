@@ -16,7 +16,7 @@ export default (elements, i18n, state) => onChange(state, (path, value, prevValu
     elements.feedbackText.textContent = '';
     elements.inputForm.classList.remove('is-invalid');
   }
-  if (path === 'form.isValid' && value === true) {
+  if (path === 'form.status' && value === 'done') {
     elements.submitButton.removeAttribute('disabled');
     elements.inputForm.classList.remove('is-invalid');
     elements.feedbackText.textContent = i18n.t('form.feedback.ok');

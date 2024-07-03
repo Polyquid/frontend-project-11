@@ -10,7 +10,6 @@ export default {
       feedback: {
         ok: 'RSS успешно загружен',
         invalidUrl: 'Ссылка должна быть валидным URL',
-        invalidRequest: 'Ресурс не содержит валидный RSS',
         alreadyExists: 'RSS уже существует',
         invalidRss: 'Ресурс не содержит валидный RSS',
         networkError: 'Ошибка сети',
