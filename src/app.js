@@ -1,5 +1,4 @@
 import i18next from 'i18next';
-import axios from 'axios';
 import { uniqueId } from 'lodash';
 import { object, string } from 'yup';
 import { Modal } from 'bootstrap';
@@ -7,10 +6,7 @@ import initView from './view.js';
 import initTextContent from './modules/initTextContent.js';
 import ru from './locales/ru.js';
 import parseRSS from './modules/parseRSS.js';
-import generateDataOfFeed from './modules/generateDataOfFeed.js';
-import generateDataOfPosts from './modules/generateDataOfPosts.js';
 import yupLocale from './locales/yupLocale.js';
-import addProxyToUrl from './modules/addProxyToUrl.js';
 import validateUrl from './modules/validateUrl.js';
 import loadRSS from './modules/loadRSS.js';
 import createNodeOfPost from './modules/createNodeOfPost.js';
@@ -62,28 +58,35 @@ export default () => {
       url: string().url(),
     });
     const watchedState = initView(elements, i18nInstance, state);
-    const trackingRSSFlow = (url, id) => {
+    const trackingRSSFlow = (url, feedId) => {
       setTimeout(() => {
-        axios.get(addProxyToUrl(url))
-          .then((res) => {
-            const rssData = parseRSS(res.data.contents);
-            const newPosts = generateDataOfPosts(rssData, id, i18nInstance, watchedState);
+        loadRSS(url)
+          .then((res) => parseRSS(res.data.contents))
+          .then(({ items }) => {
             const filteredCurrentPosts = watchedState.posts
-              .filter((post) => post.feedId === id);
-            const filteredNewPosts = newPosts
+              .filter((post) => post.feedId === feedId);
+            const filteredNewPosts = items
               .filter((post) => !filteredCurrentPosts.some(({
                 title: currTitle,
                 description: currDes,
                 link: currLink,
               }) => post.title === currTitle
               && post.description === currDes
-              && post.link === currLink));
+              && post.link === currLink))
+              .map((item) => {
+                const id = uniqueId();
+                const node = createNodeOfPost({ ...item, id }, i18nInstance, watchedState);
+                return {
+                  ...item,
+                  feedId,
+                  id,
+                  node,
+                };
+              });
             watchedState.posts.unshift(...filteredNewPosts);
-            trackingRSSFlow(url, id);
+            trackingRSSFlow(url, feedId);
           })
-          .catch((error) => {
-            console.log(error);
-          });
+          .catch((error) => console.error(error));
       }, 5000);
     };
     elements.rssForm.addEventListener('submit', (e) => {
@@ -99,7 +102,6 @@ export default () => {
           return loadRSS(url);
         })
         .then((res) => {
-          console.log(res);
           watchedState.form.status = 'done';
           return parseRSS(res.data.contents);
         })
@@ -111,71 +113,24 @@ export default () => {
             url: currentUrl.url,
           };
           const posts = items.map((item) => {
-            const postId = uniqueId();
-            const node = createNodeOfPost({ ...item, postId }, i18nInstance, watchedState);
+            const id = uniqueId();
+            const node = createNodeOfPost({ ...item, id }, i18nInstance, watchedState);
             return {
               ...item,
-              id: feed.id,
-              postId,
+              feedId: feed.id,
+              id,
               node,
             };
           });
           watchedState.feeds.push(feed);
           watchedState.posts.unshift(...posts);
+          trackingRSSFlow(currentUrl.url, feed.id);
         })
         .catch((error) => {
           watchedState.form.isValid = false;
           watchedState.form.status = getLoadingProcessErrorType(error);
           watchedState.form.errors.push(error.message);
         });
-      // urlSchema.validate(currentUrl)
-      //   .then(() => {
-      //     watchedState.form.status = 'sending';
-      //     watchedState.form.errors.length = 0;
-      //     if (watchedState.feeds.some(({ url }) => url === currentUrl.url)) {
-      //       watchedState.form.status = 'alreadyExists';
-      //       watchedState.form.errors.push('form.feedback.alreadyExists');
-      //     } else {
-      //       axios.get(addProxyToUrl(currentUrl.url))
-      //         .then((res) => {
-      //           try {
-      //             const rssData = parseRSS(res.data.contents);
-      //             const {
-      //               title,
-      //               description,
-      //               id,
-      //             } = generateDataOfFeed(rssData);
-      //             watchedState.feeds.push({
-      //               title,
-      //               description,
-      //               id,
-      //               url: currentUrl.url,
-      //             });
-      //             const newPosts = generateDataOfPosts(rssData, id, i18nInstance, watchedState);
-      //             watchedState.posts.unshift(...newPosts);
-      //             trackingRSSFlow(currentUrl.url, id);
-      //             watchedState.form.isValid = true;
-      //             elements.rssForm.reset();
-      //           } catch (error) {
-      //             watchedState.form.status = 'invalidRss';
-      //             watchedState.form.isValid = false;
-      //             watchedState.form.errors.push('form.feedback.invalidRss');
-      //           }
-      //         })
-      //         .catch((error) => {
-      //           console.log(error);
-      //           watchedState.form.status = 'networkError';
-      //           watchedState.form.isValid = false;
-      //           watchedState.form.errors.push('form.feedback.networkError');
-      //         });
-      //     }
-      //   })
-      //   .catch((error) => {
-      //     console.log(error);
-      //     watchedState.form.status = 'urlIsInvalid';
-      //     watchedState.form.isValid = false;
-      //     watchedState.form.errors = error.errors;
-      //   });
     });
   });
 };
