@@ -125,6 +125,7 @@ export default () => {
           watchedState.feeds.push(feed);
           watchedState.posts.unshift(...posts);
           trackingRSSFlow(currentUrl.url, feed.id);
+          elements.rssForm.reset();
         })
         .catch((error) => {
           watchedState.form.isValid = false;
