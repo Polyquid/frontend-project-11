@@ -1,53 +1,46 @@
 import onChange from 'on-change';
-import generateNodesOfFeeds from './modules/generateNodesOfFeeds.js';
-import initFeedsAndPosts from './modules/initFeedsAndPosts.js';
+import initFeedsAndPosts from './modules/view/initFeedsAndPosts.js';
+import renderSendingState from './modules/view/renderSendingState.js';
+import renderSuccessfulState from './modules/view/renderSuccessfulState.js';
+import renderErrorState from './modules/view/renderErrorState.js';
+import renderFeeds from './modules/view/renderFeeds.js';
+import renderPosts from './modules/view/renderPosts.js';
+import renderModal from './modules/view/renderModal.js';
+import renderCheckedPost from './modules/view/renderCheckedPost.js';
 
-export default (elements, i18n, state) => onChange(state, (path, value, prevValue) => {
-  if (path === 'form.errors') {
-    elements.submitButton.removeAttribute('disabled');
-    elements.feedbackText.textContent = i18n.t(value);
-    elements.inputForm.classList.add('is-invalid');
-    elements.feedbackText.classList.remove('text-success');
-    elements.feedbackText.classList.add('text-danger');
-  }
-  if (path === 'form.status' && value === 'sending') {
-    elements.submitButton.setAttribute('disabled', '');
-    elements.inputForm.classList.remove('is-invalid');
-    elements.feedbackText.textContent = '';
-    elements.inputForm.classList.remove('is-invalid');
-  }
-  if (path === 'form.status' && value === 'done') {
-    elements.submitButton.removeAttribute('disabled');
-    elements.inputForm.classList.remove('is-invalid');
-    elements.feedbackText.textContent = i18n.t('form.feedback.ok');
-    elements.feedbackText.classList.add('text-success');
-    elements.feedbackText.classList.remove('text-danger');
-  }
-  if (path === 'feeds' && prevValue.length === 0) {
-    initFeedsAndPosts(elements.postsWrapper, elements.feedsWrapper, i18n);
-  }
-  if (path === 'feeds') {
-    const feedsBody = document.querySelector('.feeds ul');
-    feedsBody.innerHTML = '';
-    const feeds = generateNodesOfFeeds(value);
-    feeds.forEach((feed) => feedsBody.append(feed));
-  }
-  if (path === 'posts') {
-    const postsBody = document.querySelector('.posts ul');
-    postsBody.innerHTML = '';
-    value.forEach(({ node }) => postsBody.append(node));
-  }
-  if (path.includes('modal') && typeof value === 'object') {
-    elements.modal.title.textContent = value.title;
-    elements.modal.description.textContent = value.description;
-    elements.modal.readAllButton.setAttribute('href', `${value.link}`);
-    elements.modal.wrapper.show();
-  }
-  if (path.includes('modal') && value === false) {
-    elements.modal.wrapper.hide();
-  }
-  if (path.includes('checkedPosts')) {
-    value.classList.remove('fw-bold');
-    value.classList.add('fw-normal', 'link-secondary');
-  }
-});
+export default (elements, i18n, state) => {
+  const watchedState = onChange(state, (path, value, prevValue) => {
+    switch (path) {
+      case 'form.status':
+        if (value === 'sending') {
+          renderSendingState(elements);
+        } else {
+          renderSuccessfulState(elements, i18n);
+        }
+        break;
+      case 'form.errors':
+        renderErrorState(elements, i18n, value);
+        break;
+      case 'feeds':
+        if (prevValue.length === 0) {
+          initFeedsAndPosts(elements.postsWrapper, elements.feedsWrapper, i18n);
+        } else {
+          renderFeeds(value);
+        }
+        break;
+      case 'posts':
+        renderPosts(watchedState, i18n, value);
+        break;
+      case 'modal.postId':
+        renderModal(watchedState, elements, value);
+        break;
+      case 'ui.seen':
+        renderCheckedPost(watchedState, elements, value);
+        break;
+      default:
+        console.log('asd');
+        break;
+    }
+  });
+  return watchedState;
+};

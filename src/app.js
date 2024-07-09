@@ -3,14 +3,14 @@ import { uniqueId } from 'lodash';
 import { object, string } from 'yup';
 import { Modal } from 'bootstrap';
 import initView from './view.js';
-import initTextContent from './modules/initTextContent.js';
+import initTextContent from './modules/view/initTextContent.js';
 import ru from './locales/ru.js';
-import parseRSS from './modules/parseRSS.js';
+import parseRSS from './modules/app/parseRSS.js';
 import yupLocale from './locales/yupLocale.js';
-import validateUrl from './modules/validateUrl.js';
-import loadRSS from './modules/loadRSS.js';
-import createNodeOfPost from './modules/createNodeOfPost.js';
-import getLoadingProcessErrorType from './modules/getLoadingProcessErrorType.js';
+import validateUrl from './modules/app/validateUrl.js';
+import loadRSS from './modules/app/loadRSS.js';
+import getLoadingProcessErrorType from './modules/app/getLoadingProcessErrorType.js';
+import trackingRSSFlows from './modules/app/trackingRSSFlows.js';
 
 export default () => {
   const elements = {
@@ -21,12 +21,7 @@ export default () => {
     postsWrapper: document.querySelector('.posts'),
     feedsWrapper: document.querySelector('.feeds'),
     body: document.querySelector('body'),
-    modal: {
-      wrapper: new Modal(document.querySelector('.modal')),
-      readAllButton: document.querySelector('.modal-footer>a'),
-      title: document.querySelector('.modal-title'),
-      description: document.querySelector('.modal-body'),
-    },
+    modal: new Modal(document.querySelector('.modal')),
   };
   const state = {
     form: {
@@ -36,12 +31,11 @@ export default () => {
     },
     feeds: [],
     posts: [],
-    checkedPosts: null,
     modal: {
-      isShown: false,
-      title: null,
-      description: null,
-      link: null,
+      postId: null,
+    },
+    ui: {
+      seen: [],
     },
   };
   const i18nInstance = i18next.createInstance();
@@ -58,37 +52,6 @@ export default () => {
       url: string().url(),
     });
     const watchedState = initView(elements, i18nInstance, state);
-    const trackingRSSFlow = (url, feedId) => {
-      setTimeout(() => {
-        loadRSS(url)
-          .then((res) => parseRSS(res.data.contents))
-          .then(({ items }) => {
-            const filteredCurrentPosts = watchedState.posts
-              .filter((post) => post.feedId === feedId);
-            const filteredNewPosts = items
-              .filter((post) => !filteredCurrentPosts.some(({
-                title: currTitle,
-                description: currDes,
-                link: currLink,
-              }) => post.title === currTitle
-              && post.description === currDes
-              && post.link === currLink))
-              .map((item) => {
-                const id = uniqueId();
-                const node = createNodeOfPost({ ...item, id }, i18nInstance, watchedState);
-                return {
-                  ...item,
-                  feedId,
-                  id,
-                  node,
-                };
-              });
-            watchedState.posts.unshift(...filteredNewPosts);
-            trackingRSSFlow(url, feedId);
-          })
-          .catch((error) => console.error(error));
-      }, 5000);
-    };
     elements.rssForm.addEventListener('submit', (e) => {
       e.preventDefault();
       const data = new FormData(e.target);
@@ -114,17 +77,14 @@ export default () => {
           };
           const posts = items.map((item) => {
             const id = uniqueId();
-            const node = createNodeOfPost({ ...item, id }, i18nInstance, watchedState);
             return {
               ...item,
               feedId: feed.id,
               id,
-              node,
             };
           });
-          watchedState.feeds.push(feed);
+          watchedState.feeds.unshift(feed);
           watchedState.posts.unshift(...posts);
-          trackingRSSFlow(currentUrl.url, feed.id);
           elements.rssForm.reset();
         })
         .catch((error) => {
@@ -133,5 +93,6 @@ export default () => {
           watchedState.form.errors.push(error.message);
         });
     });
+    trackingRSSFlows(watchedState);
   });
 };
