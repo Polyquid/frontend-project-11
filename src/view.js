@@ -24,9 +24,8 @@ export default (elements, i18n, state) => {
       case 'feeds':
         if (prevValue.length === 0) {
           initFeedsAndPosts(elements.postsWrapper, elements.feedsWrapper, i18n);
-        } else {
-          renderFeeds(value);
         }
+        renderFeeds(value);
         break;
       case 'posts':
         renderPosts(watchedState, i18n, value);
@@ -38,7 +37,6 @@ export default (elements, i18n, state) => {
         renderCheckedPost(watchedState, elements, value);
         break;
       default:
-        console.log('asd');
         break;
     }
   });
