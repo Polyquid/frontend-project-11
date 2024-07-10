@@ -1,4 +1,4 @@
 import './main.css';
-import app from './app.js';
+import app from './modules/app/index.js';
 
 app();

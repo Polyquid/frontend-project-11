@@ -1,12 +1,12 @@
 import onChange from 'on-change';
-import initFeedsAndPosts from './modules/view/initFeedsAndPosts.js';
-import renderSendingState from './modules/view/renderSendingState.js';
-import renderSuccessfulState from './modules/view/renderSuccessfulState.js';
-import renderErrorState from './modules/view/renderErrorState.js';
-import renderFeeds from './modules/view/renderFeeds.js';
-import renderPosts from './modules/view/renderPosts.js';
-import renderModal from './modules/view/renderModal.js';
-import renderCheckedPost from './modules/view/renderCheckedPost.js';
+import initFeedsAndPosts from './initFeedsAndPosts.js';
+import renderSendingState from './renderSendingState.js';
+import renderSuccessfulState from './renderSuccessfulState.js';
+import renderErrorState from './renderErrorState.js';
+import renderFeeds from './renderFeeds.js';
+import renderPosts from './renderPosts.js';
+import renderModal from './renderModal.js';
+import renderCheckedPost from './renderCheckedPost.js';
 
 export default (elements, i18n, state) => {
   const watchedState = onChange(state, (path, value, prevValue) => {

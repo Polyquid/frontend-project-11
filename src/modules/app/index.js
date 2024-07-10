@@ -2,15 +2,15 @@ import i18next from 'i18next';
 import { uniqueId } from 'lodash';
 import { object, string } from 'yup';
 import { Modal } from 'bootstrap';
-import initView from './view.js';
-import initTextContent from './modules/view/initTextContent.js';
-import ru from './locales/ru.js';
-import parseRSS from './modules/app/parseRSS.js';
-import yupLocale from './locales/yupLocale.js';
-import validateUrl from './modules/app/validateUrl.js';
-import loadRSS from './modules/app/loadRSS.js';
-import getLoadingProcessErrorType from './modules/app/getLoadingProcessErrorType.js';
-import trackingRSSFlows from './modules/app/trackingRSSFlows.js';
+import initView from '../view/index.js';
+import initTextContent from '../view/initTextContent.js';
+import ru from '../../locales/ru.js';
+import parseRSS from './parseRSS.js';
+import yupLocale from '../../locales/yupLocale.js';
+import validateUrl from './validateUrl.js';
+import loadRSS from './loadRSS.js';
+import getLoadingProcessErrorType from './getLoadingProcessErrorType.js';
+import trackingRSSFlows from './trackingRSSFlows.js';
 
 export default () => {
   const elements = {
@@ -61,7 +61,7 @@ export default () => {
       validateUrl(urlSchema, currentUrl, watchedState.feeds)
         .then(({ url }) => {
           watchedState.form.status = 'sending';
-          watchedState.form.errors.length = 0;
+          watchedState.form.errors = [];
           return loadRSS(url);
         })
         .then((res) => {
